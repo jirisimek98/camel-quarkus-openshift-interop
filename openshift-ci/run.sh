@@ -12,4 +12,4 @@ mvn -B -V clean install -fae -Dformat.skip=true -am -Dquarkus.openshift.build-lo
     -Dcamel-quarkus.platform.artifact-id=$CAMEL_QUARKUS_PLATFORM_ARTIFACT_ID \
     -Dcamel-quarkus.platform.version=$CAMEL_QUARKUS_VERSION \
     -Dopenshift \
-    -Pocp-interop
+    -pl $PROJECTS

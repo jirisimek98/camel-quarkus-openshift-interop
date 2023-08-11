@@ -1,23 +1,21 @@
-FROM registry.access.redhat.com/ubi8/ubi
+FROM registry.access.redhat.com/ubi8/openjdk-11
 
 ENV LANGUAGE='en_US:en'
 WORKDIR /tmp
 
+# user jboss doesn't have priviledges to install packages
+USER root 
+RUN microdnf install -y wget git zip unzip
+
 RUN curl -s https://password.corp.redhat.com/RH-IT-Root-CA.crt > /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt \
 	&& update-ca-trust
-
-# ubi8 repos contain maven 3.5 and jdk 1.8; we need something newer
-RUN dnf install -y wget git zip unzip --setopt=install_weak_deps=False
-RUN wget -O sdkman.sh https://get.sdkman.io && /bin/bash sdkman.sh
-RUN source "/root/.sdkman/bin/sdkman-init.sh" && sdk install java 11.0.20-tem && sdk install maven 3.8.7
-ENV SDKMAN_DIR=/root/.sdkman
 
 # install oc client
 ADD https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.13.0/openshift-client-linux-4.13.0.tar.gz oc.tar.gz
 RUN tar -xaf oc.tar.gz oc && mv oc /usr/local/bin/
 
 # these versions should be updated for every release
-ENV QUARKUS_BRANCH=2.13.x
+ENV CAMEL_QUARKUS_TS_BRANCH=2.13.x
 ENV QUARKUS_VERSION=2.13.8.SP1-redhat-00003
 ENV QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-bom
@@ -25,7 +23,9 @@ ENV CAMEL_QUARKUS_VERSION=2.13.8.SP1-redhat-00003
 ENV CAMEL_QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV CAMEL_QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-camel-bom
 
-RUN git clone --depth=1 -b ${QUARKUS_BRANCH} https://gitlab.cee.redhat.com/jboss-fuse-qe/camel-q/camel-q-test-suite.git tests
+ENV PROJECTS=mounts
+
+RUN git clone --depth=1 -b ${CAMEL_QUARKUS_TS_BRANCH} https://gitlab.cee.redhat.com/jboss-fuse-qe/camel-q/camel-q-test-suite.git tests
 WORKDIR /tmp/tests
 RUN chmod -R 777 /tmp/tests
 
@@ -42,6 +42,8 @@ ADD --chmod=755 oc_login.sh /tmp/tests/
 
 # Without this we got "read-only file system" bug during CI test runs
 RUN chgrp -R 0 /var && chmod -R g=u /var
+RUN microdnf clean all && [ ! -d /var/cache/yum ] || rm -rf /var/cache/yum
+USER jboss
 
 # test results are in $PROJECT/target/failsafe-reports/*.xml for every PROJECT in $PROJECTS.
-CMD ./oc_login.sh && source "/root/.sdkman/bin/sdkman-init.sh" && ./run.sh
+CMD ./oc_login.sh && ./run.sh
