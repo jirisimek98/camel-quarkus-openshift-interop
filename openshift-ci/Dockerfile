@@ -7,6 +7,11 @@ WORKDIR /tmp
 USER root 
 RUN microdnf install -y wget git zip unzip
 
+# install Maven 3.8.x where x >= 6
+ENV SDKMAN_DIR=/root/.sdkman
+RUN wget -O sdkman.sh https://get.sdkman.io && /bin/bash sdkman.sh
+RUN source "/root/.sdkman/bin/sdkman-init.sh" && sdk install maven 3.8.7
+
 RUN curl -s https://password.corp.redhat.com/RH-IT-Root-CA.crt > /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt \
 	&& update-ca-trust
 
@@ -23,7 +28,7 @@ ENV CAMEL_QUARKUS_VERSION=2.13.8.SP1-redhat-00003
 ENV CAMEL_QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV CAMEL_QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-camel-bom
 
-ENV PROJECTS=mounts
+ENV PROJECTS=mounts,ocp-interaction-layers/configmap-secret
 
 RUN git clone --depth=1 -b ${CAMEL_QUARKUS_TS_BRANCH} https://gitlab.cee.redhat.com/jboss-fuse-qe/camel-q/camel-q-test-suite.git tests
 WORKDIR /tmp/tests
@@ -46,4 +51,4 @@ RUN microdnf clean all && [ ! -d /var/cache/yum ] || rm -rf /var/cache/yum
 USER jboss
 
 # test results are in $PROJECT/target/failsafe-reports/*.xml for every PROJECT in $PROJECTS.
-CMD ./oc_login.sh && ./run.sh
+CMD ./oc_login.sh && source "$SDKMAN_DIR/bin/sdkman-init.sh" && ./run.sh
