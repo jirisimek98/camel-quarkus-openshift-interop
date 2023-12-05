@@ -21,7 +21,7 @@ There are no specific requirement on OpenShift installation, but pull secret for
 ### Test machine requirements
 All the required libraries are installed as part of the scenario:
 - Git
-- Java 11 OpenJDK
+- Java 17 OpenJDK
 - Maven
 - Docker/Podman/Buildah
 
@@ -43,17 +43,81 @@ ENV CAMEL_QUARKUS_VERSION=2.13.8.SP1-redhat-00003 # version of Camel Quarkus BOM
 ENV CAMEL_QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform # group of Camel Quarkus BOM. Unlikely to change
 ENV CAMEL_QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-camel-bom # name of Camel Quarkus BOM. Unlikely to change
 ```
-- Create PR to `main` branch and pay attention to `ci/prow/quarkus-ocp4.14-lp-interop-images` check.
-- Merge the PR
+- Update to preferred JDK in Dockerfile (base image FROM)
+- Update ocp client in Dockerfile version to latest released OCP (find at https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/)
+- Try to run it locally (see [How to run locally#Without OCP deployment](#without-ocp-deployment)) and verify it passes
+- [Create image and push it to quay.io](#create-an-image)
+- [Ensure the image works in OpenShift CI](#how-to-verify-image-is-working-at-openshift-ci)
 
-**NB:** For now, Interop team supports only one job for every product, so we only test the latest RHBQ release.
+**NOTE:** For now, Interop team supports only one job for every product, so we only test the latest CEQ release. They plan to keep N-1 (eg. 4.14.x) and N-2 (eg. 4.13.x) OpenShift certifications, but it should be INTEROP team responsibility.
 
 ### Adding new tests
 Currently, the list of modules to be run is defined in the run script in `PROJECTS` variable. If you want additional tests to be run, update the list of modules (don't forget to add dependent modules if applicable).
-You should only add stable tests without random failures to the list! Once done, run the tests locally against our OCP instance, when follow the same steps above.
+You should only add stable tests without random failures to the list! Once done follow the same steps mentioned above (starting from `Try to run it locally`).
+
+## Create an image
+### Create image
+```
+docker build -t quay.io/rh_integration/camel-quarkus-qe-test-container:latest .
+```
+### Push image
+**_NOTE:_** You have to be first logged in to quay.io. You can find under _Account settings/User settings/Docker CLI Password/Generate Encrypted password_ at quay.io.
+```
+docker push quay.io/rh_integration/camel-quarkus-qe-test-container:latest
+```
+Verify it is present at https://quay.io/repository/rh_integration/camel-quarkus-qe-test-container?tab=tags 
+
+## How to verify image is working at OpenShift CI
+You have to firstly decide which strategy we follow. 
+If we are using `:latest` tag of test images for all tested OpenShift versions or we have multiple different tags. 
+At the time of writing this docs, we are using `:latest` tag, as we are testing only latest supported GA version of Camel Quarkus product.
+
+You can check it in one of `.yaml` file in https://github.com/openshift/release/tree/master/ci-operator/config/jboss-fuse/camel-quarkus-openshift-interop eg. in https://github.com/openshift/release/blob/master/ci-operator/config/jboss-fuse/camel-quarkus-openshift-interop/jboss-fuse-camel-quarkus-openshift-interop-main__camel-quarkus-ocp4.15-lp-interop.yaml#L5
+
+You should see similar:
+
+````
+base_images:
+  camel-quarkus-runner:
+    name: camel-quarkus-qe-test-container
+    namespace: ci
+    tag: latest
+````
+
+### Using :latest tag
+You can submit a WIP PR [example](https://github.com/llowinge/release/commit/2dd7846900fb52a039d8129c2ece713a26e69985) to https://github.com/openshift/release that's putting a minor change on the test script for example echo command. 
+Once the automation recognized the job will be affected from the PR, you'll be able to run rehearse.
+
+You can do it with commenting eg. `/pj-rehearse periodic-ci-jboss-fuse-camel-quarkus-openshift-interop-main-camel-quarkus-ocp4.15-lp-interop-camel-quarkus-interop-aws`
+
+After green test results, you should ack it with `/pj-rehearse ack` and waiting for PR being merged - if it takes too much time, you can approach Slack [#forum-qe-layered-product](https://redhat-internal.slack.com/archives/C04QDE5TK1C).
+
+### Using custom tag
+In the past we were testing two versions of GA product. 
+It was 2.13 and 3.2. 
+To differentiate we were using different tags of test image. 
+For example `2.13.x-openjdk11` and `3.2.x-openjdk17`. 
+If it would re-happen again, we would have to communicate it with INTEROP team so they create more `.yaml` files.
+
+In such case the theoretical steps should be:
+
+* Creating PR with new tag added to https://github.com/openshift/release/blob/master/core-services/image-mirroring/supplemental-ci-images/mapping_supplemental_ci_images_ci#L129
+* After merged, creating another PR with changes to `.yaml` files (probably with help of INTEROP team)
+
 
 ## How to run locally
-- Change `oc_login.sh` to login to your existing OCP cluster.
+### Without OCP deployment
+**_NOTE:_** This is easier approach, but it is not 100% accurate to what happens on OpenShift CI. But usually such verification is enough.
+
+Docker command below will build the image. Then it will run the container, which first logs into your OpenShift, clones testsuite and then run Maven execution of tests. So you will verify that the image works (but you are not running it in OpenShift, so it is not 100% safe way). 
+
+- Change `oc_login.sh` file to login to your existing OCP cluster.
+- Go to `openshift-ci folder` and run:
+```
+docker build -t camel-quarkus-openshift-interop . && docker run camel-quarkus-openshift-interop | tee output.txt
+```
+### With OCP deployment
+- Change `oc_login.sh` file to login to your existing OCP cluster.
 - Create a new public Docker repository (eg `quay.io/$USER/test-container`)
 - Build and save an image for testing (you can use Docker, Podman or Buildah):
 ```

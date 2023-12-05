@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/openjdk-11
+FROM --platform=linux/amd64 registry.access.redhat.com/ubi8/openjdk-17
 
 ENV LANGUAGE='en_US:en'
 WORKDIR /tmp
@@ -13,19 +13,19 @@ RUN wget -O sdkman.sh https://get.sdkman.io && /bin/bash sdkman.sh
 RUN source "/root/.sdkman/bin/sdkman-init.sh" && sdk install maven 3.8.7
 ENV PATH=$SDKMAN_DIR/candidates/maven/current/bin:$PATH
 
-RUN curl -s https://password.corp.redhat.com/RH-IT-Root-CA.crt > /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt \
+RUN curl -s https://certs.corp.redhat.com/certs/2015-IT-Root-CA.pem > /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt \
 	&& update-ca-trust
 
 # install oc client
-ADD https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.13.0/openshift-client-linux-4.13.0.tar.gz oc.tar.gz
+ADD https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.14.3/openshift-client-linux-4.14.3.tar.gz oc.tar.gz
 RUN tar -xaf oc.tar.gz oc && mv oc /usr/local/bin/
 
 # these versions should be updated for every release
-ENV CAMEL_QUARKUS_TS_BRANCH=2.13.x
-ENV QUARKUS_VERSION=2.13.8.SP1-redhat-00003
+ENV CAMEL_QUARKUS_TS_BRANCH=3.2.x
+ENV QUARKUS_VERSION=3.2.6.SP1-redhat-00001
 ENV QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-bom
-ENV CAMEL_QUARKUS_VERSION=2.13.8.SP1-redhat-00003
+ENV CAMEL_QUARKUS_VERSION=3.2.6.SP1-redhat-00001
 ENV CAMEL_QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV CAMEL_QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-camel-bom
 
