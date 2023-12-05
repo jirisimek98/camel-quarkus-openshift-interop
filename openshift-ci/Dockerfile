@@ -11,6 +11,7 @@ RUN microdnf install -y wget git zip unzip
 ENV SDKMAN_DIR=/root/.sdkman
 RUN wget -O sdkman.sh https://get.sdkman.io && /bin/bash sdkman.sh
 RUN source "/root/.sdkman/bin/sdkman-init.sh" && sdk install maven 3.8.7
+ENV PATH=$SDKMAN_DIR/candidates/maven/current/bin:$PATH
 
 RUN curl -s https://password.corp.redhat.com/RH-IT-Root-CA.crt > /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt \
 	&& update-ca-trust
@@ -51,4 +52,4 @@ RUN microdnf clean all && [ ! -d /var/cache/yum ] || rm -rf /var/cache/yum
 USER jboss
 
 # test results are in $PROJECT/target/failsafe-reports/*.xml for every PROJECT in $PROJECTS.
-CMD ./oc_login.sh && source "$SDKMAN_DIR/bin/sdkman-init.sh" && ./run.sh
+CMD ./oc_login.sh && ./run.sh
