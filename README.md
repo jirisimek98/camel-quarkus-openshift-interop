@@ -67,6 +67,8 @@ docker push quay.io/rh_integration/camel-quarkus-qe-test-container:latest
 ```
 Verify it is present at https://quay.io/repository/rh_integration/camel-quarkus-qe-test-container?tab=tags 
 
+This image is later used in the OpenShift CI tests, as defined [here](https://github.com/openshift/release/blob/master/core-services/image-mirroring/supplemental-ci-images/mapping_supplemental_ci_images_ci#L124).
+
 ## How to verify image is working at OpenShift CI
 You have to firstly decide which strategy we follow. 
 If we are using `:latest` tag of test images for all tested OpenShift versions or we have multiple different tags. 
@@ -86,11 +88,11 @@ base_images:
 
 ### Using :latest tag
 You can submit a WIP PR [example](https://github.com/llowinge/release/commit/2dd7846900fb52a039d8129c2ece713a26e69985) to https://github.com/openshift/release that's putting a minor change on the test script for example echo command. 
-Once the automation recognized the job will be affected from the PR, you'll be able to run rehearse.
+Once the automation recognized the job will be affected from the PR, you'll be able to run rehearse. If you are not part of the [owners](https://github.com/openshift/release/blob/master/ci-operator/step-registry/camel-quarkus/execute-tests/OWNERS) file, you would need to have one of the owners comment `/ok-to-test` in the PR to enable testing.
 
-You can do it with commenting eg. `/pj-rehearse periodic-ci-jboss-fuse-camel-quarkus-openshift-interop-main-camel-quarkus-ocp4.15-lp-interop-camel-quarkus-interop-aws`
+To trigger the testing workflow, you can post a comment `/pj-rehearse <test name>` - the bot prints all the tests you can trigger, in the time of writing you can use for example `/pj-rehearse periodic-ci-jboss-fuse-camel-quarkus-openshift-interop-main-camel-quarkus-ocp4.15-lp-interop-camel-quarkus-interop-aws`.
 
-After green test results, you should ack it with `/pj-rehearse ack` and waiting for PR being merged - if it takes too much time, you can approach Slack [#forum-qe-layered-product](https://redhat-internal.slack.com/archives/C04QDE5TK1C).
+If you are only testing the changes to the docker image, you can close the PR after the test passes, otherwise after green test results, you should ack it with `/pj-rehearse ack` and waiting for PR being merged - if it takes too much time, you can approach Slack [#forum-qe-layered-product](https://redhat-internal.slack.com/archives/C04QDE5TK1C).
 
 ### Using custom tag
 In the past we were testing two versions of GA product. 
