@@ -88,12 +88,12 @@ base_images:
 ````
 
 ### Using :latest tag
-You can submit a WIP PR [example](https://github.com/llowinge/release/commit/2dd7846900fb52a039d8129c2ece713a26e69985) to https://github.com/openshift/release that's putting a minor change on the test script for example echo command. The automation will then recognize the changes and run some checks. 
+You can submit a draft PR [example](https://github.com/llowinge/release/commit/2dd7846900fb52a039d8129c2ece713a26e69985) to https://github.com/openshift/release that's putting a minor change on the test script, for example echo command, this is only for testing purposes and the actual changes will not be merged. The automation will then recognize the changes and run some checks.
 Unless you are a trusted user in the openshift-ci group, the PR will automatically get `needs-ok-to-test`. This needs to be undone, so you need to ask a trusted user (vkasala or someone from the openshift-ci gorup) to comment `/ok-to-test` so that you can run rehearse tests.
 
 You can do it with commenting eg. `/pj-rehearse periodic-ci-jboss-fuse-camel-quarkus-openshift-interop-main-camel-quarkus-ocp4.15-lp-interop-camel-quarkus-interop-aws`
 
-After green test results, you should ack it with `/pj-rehearse ack` and waiting for PR being merged - if it takes too much time, you can approach Slack [#forum-qe-layered-product](https://redhat-internal.slack.com/archives/C04QDE5TK1C).
+After green test results, you can close the PR.
 
 ### Using custom tag
 In the past we were testing two versions of GA product. 
