@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 registry.access.redhat.com/ubi8/openjdk-17
+FROM --platform=linux/amd64 registry.access.redhat.com/ubi8/openjdk-21
 
 ENV LANGUAGE='en_US:en'
 
@@ -6,7 +6,7 @@ ENV SDKMAN_DIR=/root/.sdkman
 ENV PATH=$SDKMAN_DIR/candidates/maven/current/bin:$PATH
 # install Maven 3.8.x where x >= 6
 ENV MAVEN_VERSION=3.8.7
-ENV OC_CLIENT_VERSION=4.14.12
+ENV OC_CLIENT_VERSION=4.15.9
 
 WORKDIR /tmp
 
@@ -31,11 +31,11 @@ RUN microdnf install -y git zip unzip &&\
 	[ ! -d /var/cache/yum ] || rm -rf /var/cache/yum
 
 # these versions should be updated for every release
-ENV CAMEL_QUARKUS_TS_BRANCH=3.2.x
-ENV QUARKUS_VERSION=3.2.10.Final-redhat-00002
+ENV CAMEL_QUARKUS_TS_BRANCH=3.8.x
+ENV QUARKUS_VERSION=3.8.4.SP1-redhat-00001
 ENV QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-bom
-ENV CAMEL_QUARKUS_VERSION=3.2.10.Final-redhat-00002
+ENV CAMEL_QUARKUS_VERSION=3.8.4.SP1-redhat-00001
 ENV CAMEL_QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV CAMEL_QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-camel-bom
 
