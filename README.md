@@ -48,6 +48,7 @@ ENV CAMEL_QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-camel-bom # name of Camel Quarkus
 - Try to run it locally (see [How to run locally#Without OCP deployment](#without-ocp-deployment)) and verify it passes
 - [Create image and push it to quay.io](#create-an-image)
 - [Ensure the image works in OpenShift CI](#how-to-verify-image-is-working-at-openshift-ci)
+- After all your checks pass and the image is pushed, create a MR with the updated Dockerfile in this repository.
 
 **NOTE:** For now, Interop team supports only one job for every product, so we only test the latest CEQ release. They plan to keep N-1 (eg. 4.14.x) and N-2 (eg. 4.13.x) OpenShift certifications, but it should be INTEROP team responsibility.
 
@@ -56,6 +57,8 @@ Currently, the list of modules to be run is defined in the run script in `PROJEC
 You should only add stable tests without random failures to the list! Once done follow the same steps mentioned above (starting from `Try to run it locally`).
 
 ## Create an image
+**_NOTE:_** Do not forget to change the `oc_login.sh` file back to its original state before you build and push the image to the registry.
+
 ### Create image
 ```
 docker build -t quay.io/rh_integration/camel-quarkus-qe-test-container:latest .
@@ -70,7 +73,7 @@ Verify it is present at https://quay.io/repository/rh_integration/camel-quarkus-
 ## How to verify image is working at OpenShift CI
 You have to firstly decide which strategy we follow. 
 If we are using `:latest` tag of test images for all tested OpenShift versions or we have multiple different tags. 
-At the time of writing this docs, we are using `:latest` tag, as we are testing only latest supported GA version of Camel Quarkus product.
+At the time of writing this docs, we are using `:latest` tag, as we are testing only latest supported GA version of Camel Quarkus product (currently version 3.8).
 
 You can check it in one of `.yaml` file in https://github.com/openshift/release/tree/master/ci-operator/config/jboss-fuse/camel-quarkus-openshift-interop eg. in https://github.com/openshift/release/blob/master/ci-operator/config/jboss-fuse/camel-quarkus-openshift-interop/jboss-fuse-camel-quarkus-openshift-interop-main__camel-quarkus-ocp4.15-lp-interop.yaml#L5
 
@@ -85,8 +88,8 @@ base_images:
 ````
 
 ### Using :latest tag
-You can submit a WIP PR [example](https://github.com/llowinge/release/commit/2dd7846900fb52a039d8129c2ece713a26e69985) to https://github.com/openshift/release that's putting a minor change on the test script for example echo command. 
-Once the automation recognized the job will be affected from the PR, you'll be able to run rehearse.
+You can submit a WIP PR [example](https://github.com/llowinge/release/commit/2dd7846900fb52a039d8129c2ece713a26e69985) to https://github.com/openshift/release that's putting a minor change on the test script for example echo command. The automation will then recognize the changes and run some checks. 
+Unless you are a trusted user in the openshift-ci group, the PR will automatically get `needs-ok-to-test`. This needs to be undone, so you need to ask a trusted user (vkasala or someone from the openshift-ci gorup) to comment `/ok-to-test` so that you can run rehearse tests.
 
 You can do it with commenting eg. `/pj-rehearse periodic-ci-jboss-fuse-camel-quarkus-openshift-interop-main-camel-quarkus-ocp4.15-lp-interop-camel-quarkus-interop-aws`
 
