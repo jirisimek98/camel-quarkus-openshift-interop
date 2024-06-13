@@ -18,7 +18,7 @@ RUN microdnf install -y git zip unzip &&\
 	/bin/bash sdkman.sh &&\
 	source "${SDKMAN_DIR}/bin/sdkman-init.sh" &&\
 	sdk install maven "${MAVEN_VERSION}" &&\
-	curl -s https://certs.corp.redhat.com/certs/2015-IT-Root-CA.pem > /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt &&\
+	curl -s https://certs.corp.redhat.com/certs/2022-IT-Root-CA.pem > /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt &&\
 	update-ca-trust &&\
 	curl "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/${OC_CLIENT_VERSION}/openshift-client-linux-${OC_CLIENT_VERSION}.tar.gz" -o oc.tar.gz &&\
 	tar -xaf oc.tar.gz oc &&\
@@ -32,10 +32,10 @@ RUN microdnf install -y git zip unzip &&\
 
 # these versions should be updated for every release
 ENV CAMEL_QUARKUS_TS_BRANCH=3.8.x
-ENV QUARKUS_VERSION=3.8.4.SP1-redhat-00001
+ENV QUARKUS_VERSION=3.8.4.SP2-redhat-00001
 ENV QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-bom
-ENV CAMEL_QUARKUS_VERSION=3.8.4.SP1-redhat-00001
+ENV CAMEL_QUARKUS_VERSION=3.8.4.SP2-redhat-00001
 ENV CAMEL_QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV CAMEL_QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-camel-bom
 
