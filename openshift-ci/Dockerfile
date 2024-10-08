@@ -6,6 +6,7 @@ ENV SDKMAN_DIR=/root/.sdkman
 ENV PATH=$SDKMAN_DIR/candidates/maven/current/bin:$PATH
 # install Maven 3.8.x where x >= 6
 ENV MAVEN_VERSION=3.8.7
+# install oc cli v4.15 due to compatibility with ubi8
 ENV OC_CLIENT_VERSION=4.15.9
 
 WORKDIR /tmp
@@ -32,10 +33,10 @@ RUN microdnf install -y git zip unzip &&\
 
 # these versions should be updated for every release
 ENV CAMEL_QUARKUS_TS_BRANCH=3.8.x
-ENV QUARKUS_VERSION=3.8.5.redhat-00003
+ENV QUARKUS_VERSION=3.8.6.redhat-00005
 ENV QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-bom
-ENV CAMEL_QUARKUS_VERSION=3.8.5.redhat-00003
+ENV CAMEL_QUARKUS_VERSION=3.8.6.redhat-00005
 ENV CAMEL_QUARKUS_PLATFORM_GROUP_ID=com.redhat.quarkus.platform
 ENV CAMEL_QUARKUS_PLATFORM_ARTIFACT_ID=quarkus-camel-bom
 
